@@ -1,0 +1,327 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>SF Tennis Courts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a court-surface header band with the headline tally, then a filter bar and one dense, sortable list of parks. */
+:root{
+  --bg:#f3f5f1; --surface:#ffffff; --fg:#17221c; --muted:#5b6a61; --line:#d9dfd8;
+  --court:#2f6b4f; --court-ink:#ffffff; --walk:#2f6b4f; --walk-soft:#dcebe2;
+  --res:#b4553a; --res-soft:#f4e1da; --ball:#d8e83a;
+  --water:#dfe7ea; --land:#fbfcf9; --parkfill:#e3ede4;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111814; --surface:#18211c; --fg:#e6ece7; --muted:#9aa89f; --line:#2b3730;
+  --court:#1f4a37; --court-ink:#f1f6f2; --walk:#7cc49c; --walk-soft:#1f3a2c;
+  --res:#e48a6f; --res-soft:#3a241d; --ball:#d8e83a;
+  --water:#0c1316; --land:#1b2520; --parkfill:#223328; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111814; --surface:#18211c; --fg:#e6ece7; --muted:#9aa89f; --line:#2b3730;
+  --court:#1f4a37; --court-ink:#f1f6f2; --walk:#7cc49c; --walk-soft:#1f3a2c;
+  --res:#e48a6f; --res-soft:#3a241d; --ball:#d8e83a;
+  --water:#0c1316; --land:#1b2520; --parkfill:#223328; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{background:var(--court);color:var(--court-ink);position:relative;overflow:hidden}
+header .wrap{padding-block:36px 52px;position:relative;z-index:1}
+.eyebrow{font-family:var(--f-data);font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+h1{font-family:var(--f-display);font-stretch:72%;font-weight:850;font-size:clamp(40px,8vw,76px);line-height:.92;margin:10px 0 14px;text-wrap:balance;letter-spacing:-.01em;text-transform:uppercase}
+h1 em{font-style:normal;color:var(--ball)}
+.lede{max-width:58ch;opacity:.92;margin:0}
+.tally{display:flex;flex-wrap:wrap;gap:28px;margin-top:26px}
+.tally div{display:flex;flex-direction:column}
+.tally b{font-family:var(--f-display);font-stretch:80%;font-weight:800;font-size:38px;line-height:1;font-variant-numeric:tabular-nums}
+.tally span{font-size:13px;opacity:.85}
+.rules-label{color:var(--muted);opacity:1;margin-top:24px}
+.rules{display:grid;grid-template-columns:1fr;gap:16px 20px;margin:10px 0 8px}
+@media (min-width:520px){.rules{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:860px){.rules{grid-template-columns:repeat(3,1fr)}}
+.rule{border-top:2px solid var(--fg);padding-top:8px;font-size:13.5px;color:var(--muted)}
+.rule strong{display:block;color:var(--fg);font-family:var(--f-display);font-stretch:85%;font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.02em}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin-top:18px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.bar .wrap{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding-block:12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;color:var(--fg);font:600 13px var(--f-body);padding:8px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font:600 13px var(--f-body);color:var(--fg);cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--walk);background:var(--walk-soft)}
+input[type=search]{flex:1 1 180px;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:8px 12px;font:14px var(--f-body)}
+select{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:8px 10px;font:600 13px var(--f-body)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--walk);outline-offset:2px}
+.count{font-size:13px;color:var(--muted);margin:14px 0 6px;font-variant-numeric:tabular-nums}
+ul.list{list-style:none;margin:0 0 40px;padding:0;border-top:1px solid var(--line)}
+li.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;padding:14px 4px;border-bottom:1px solid var(--line);align-items:center}
+.name{font-family:var(--f-display);font-stretch:88%;font-weight:700;font-size:19px;line-height:1.15}
+.name a{color:inherit;text-decoration:none}
+.name a:hover{text-decoration:underline}
+.meta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted);margin-top:3px}
+.meta .zip{font-family:var(--f-data);font-size:12px}
+.courts{display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap;max-width:220px}
+.c{width:14px;height:22px;border-radius:2px;position:relative}
+.c::after{content:"";position:absolute;left:1px;right:1px;top:50%;height:1px;background:rgba(255,255,255,.7)}
+.c.w{background:var(--walk)} .c.r{background:var(--res-soft);border:1.5px solid var(--res)} .c.r::after{background:var(--res)}
+.status{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pill{font:600 12px var(--f-body);border-radius:999px;padding:2px 9px}
+.pill.walk{background:var(--walk-soft);color:var(--walk)}
+.pill.mix{background:var(--res-soft);color:var(--res)}
+.pill.res{background:transparent;color:var(--res);border:1px solid var(--res)}
+.links{margin-left:auto;display:flex;gap:12px;font-size:13px}
+.links a{color:var(--walk);font-weight:600}
+.flag{font-size:12.5px;color:var(--muted)}
+.empty{padding:30px 4px;color:var(--muted)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;vertical-align:middle;margin-right:5px}
+footer{border-top:1px solid var(--line);padding-block:20px 40px;font-size:13px;color:var(--muted)}
+footer a{color:var(--walk)}
+@media (min-width:640px){li.row{grid-template-columns:minmax(0,1fr) 230px}}
+.mapview{display:grid;gap:16px;margin:14px 0 40px}
+@media (min-width:820px){.mapview{grid-template-columns:minmax(0,1fr) 300px;align-items:start}}
+.mapbox{background:var(--water);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0}
+#map{display:block;width:100%;height:auto}
+#map .land{fill:var(--land);stroke:var(--line);stroke-width:1.2}
+#map .park{fill:var(--parkfill)}
+#map .lbl{font:600 10px var(--f-data);fill:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+#map .dot{cursor:pointer;stroke:var(--land);stroke-width:1.5;transition:r .12s}
+#map .dot.w{fill:var(--walk)} #map .dot.r{fill:var(--res-soft);stroke:var(--res);stroke-width:1.5}
+#map .dot.sel{stroke:var(--fg);stroke-width:3}
+#map .dot:focus-visible{outline:none;stroke:var(--fg);stroke-width:3}
+#map .dname{font:600 11px var(--f-body);fill:var(--fg);paint-order:stroke;stroke:var(--land);stroke-width:3px;pointer-events:none}
+.pick{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.pick .hint{margin:0;color:var(--muted);font-size:13.5px}
+.pick .courts{justify-content:flex-start;margin:10px 0}
+.pick .status{margin-top:6px}
+.approx{font-size:12px;color:var(--muted);margin-top:10px}
+</style>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">San Francisco Rec &amp; Park</div>
+    <h1>Tennis <em>Courts</em></h1>
+    <div class="tally" id="tally"></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="eyebrow rules-label" id="rules-label">Rules for walk-up play</div>
+  <div class="rules" aria-labelledby="rules-label">
+    <div class="rule"><strong>One set</strong>Singles or doubles, then hand the court over if anyone is waiting.</div>
+    <div class="rule"><strong>5 min warm-up</strong>Rallying instead of a set is capped at 30 minutes.</div>
+    <div class="rule"><strong>Wait in person</strong>Wait at one court only, and your whole group must be there to claim it.</div>
+    <div class="rule"><strong>Doubles when busy</strong>If two or more people are waiting, the court switches to doubles.</div>
+    <div class="rule"><strong>Court basics</strong>Tennis shoes only, two balls per court, no dogs, bikes or skateboards.</div>
+    <div class="rule"><strong>15-minute rule</strong>A reserved court left empty 15 minutes past its start time opens to walk-up play.</div>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="seg" role="group" aria-label="View">
+      <button type="button" id="v-list" aria-pressed="true" data-view="list">List</button>
+      <button type="button" id="v-map" aria-pressed="false" data-view="map">Map</button>
+    </div>
+    <div class="seg" role="group" aria-label="Access">
+      <button type="button" id="f-all" aria-pressed="false" data-mode="all">All courts</button>
+      <button type="button" id="f-walk" aria-pressed="true" data-mode="walk">Walk-up</button>
+    </div>
+    <button type="button" class="chip" id="f-lights" aria-pressed="false">Lights</button>
+    <button type="button" class="chip" id="f-rr" aria-pressed="false">Restrooms</button>
+    <input type="search" id="q" placeholder="Search park or neighborhood" aria-label="Search park or neighborhood">
+    <select id="sort" aria-label="Sort">
+      <option value="name">A–Z</option>
+      <option value="walk">Most walk-up courts</option>
+      <option value="area">Neighborhood</option>
+    </select>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="count"><span id="count"></span></div>
+  <div class="legend"><span><i class="c w"></i>walk-up court</span><span><i class="c r"></i>reservable ($5/hr at rec.us)</span></div>
+  <ul class="list" id="list"></ul>
+  <section class="mapview" id="mapview" hidden>
+    <div class="mapbox"><svg id="map" role="img" aria-label="Map of San Francisco with walk-up tennis parks"></svg></div>
+    <div class="pick" id="pick"><p class="hint">Tap a dot to see the park. Bigger dots have more walk-up courts.</p></div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    Source: <a href="https://sfrecpark.org/1446/Tennis-Court-Directory" target="_blank" rel="noopener">SF Rec &amp; Park Tennis Court Directory</a>, checked Oct 26, 2026. Neighborhoods are added for browsing; ZIP codes are as the city lists them. Court status can change, and some sites have scheduled lessons or pickleball hours, so check the park page before a long trip.
+  </div>
+</footer>
+
+<script>
+// [name, zip, lights, restrooms, total, reservable, walkup, neighborhood, facility slug]
+const D=[
+["Alamo Square","94117",0,1,1,0,1,"Western Addition","Alamo-Square-323"],
+["Alice Chalmers","94112",0,1,1,0,1,"Crocker-Amazon","Alice-Chalmers-Playground-228"],
+["Alice Marble","94109",0,0,4,4,0,"Russian Hill","Alice-Marble-Courts-324"],
+["Alta Plaza","94115",0,1,3,1,2,"Pacific Heights","Alta-Plaza-Park-147"],
+["Aptos","94127",0,0,1,0,1,"West of Twin Peaks","Aptos-Playground-230"],
+["Argonne","94121",0,1,1,0,1,"Richmond","Argonne-Playground-231"],
+["Balboa","94112",0,1,4,4,0,"Ingleside","Balboa-Park-148"],
+["Buena Vista","94117",0,0,2,1,1,"Haight","Buena-Vista-Park-155"],
+["Cabrillo","94121",0,1,1,0,1,"Outer Richmond","Cabrillo-Playground-233"],
+["Cayuga","94112",1,1,1,0,1,"Outer Mission","Cayuga-Playground-234"],
+["Coronado","94110",1,1,1,0,1,"Mission","Jose-Coronado-Playground-250"],
+["Crocker Amazon","94112",1,1,3,3,0,"Crocker-Amazon","Crocker-Amazon-Playground-236"],
+["Dolores","94114",1,1,6,3,3,"Mission","Mission-Dolores-Park-188"],
+["Douglass","94114",0,1,1,0,1,"Noe Valley","Douglass-Playground-237"],
+["DuPont","94121",0,0,4,4,0,"Richmond","Dupont-Tennis-Courts-331"],
+["Eureka Valley","94114",0,1,1,0,1,"Castro","Eureka-Valley-Rec-Center-86"],
+["Excelsior","94112",1,1,1,0,1,"Excelsior","Excelsior-Playground-238"],
+["Fulton","94121",0,1,1,1,0,"Richmond","Fulton-Playground-239"],
+["George Christopher","94131",1,1,1,0,1,"Diamond Heights","George-Christopher-Playground-240"],
+["Glen Canyon","94127",1,1,2,1,1,"Glen Park","Glen-Park-Rec-Center-89"],
+["Golden Gate Heights","94116",0,0,2,0,2,"Sunset","Golden-Gate-Heights-Park-170"],
+["Goldman Tennis Center","94122",1,1,16,16,0,"Golden Gate Park","Lisa-and-Douglas-Goldman-Tennis-Center-420"],
+["Grattan","94117",0,1,1,0,1,"Cole Valley","Grattan-Playground-242"],
+["Hamilton","94115",1,1,2,2,0,"Western Addition","Hamilton-Rec-Center-93"],
+["Hayes Valley","94102",1,1,1,0,1,"Hayes Valley","Hayes-Valley-Playground-243"],
+["Helen Wills","94109",0,1,1,1,0,"Nob Hill","Helen-Wills-Playground-244"],
+["Holly Park","94110",0,1,1,0,1,"Bernal Heights","Holly-Park-173"],
+["J. P. Murphy","94116",0,1,3,3,0,"Sunset","JP-Murphy-Playground-246"],
+["Jackson","94107",1,0,1,1,0,"Potrero Hill","Jackson-Playground-Garden-304"],
+["James Rolph Jr.","94110",1,1,2,0,2,"Mission","James-Rolph-Jr-Playground-248"],
+["Joe DiMaggio","94113",1,1,3,1,2,"North Beach","Joe-DiMaggio-Playground-249"],
+["Junipero Serra","94118",0,0,1,0,1,"Lakeshore","Junipero-Serra-Playground-252"],
+["Lafayette","94132",0,1,2,2,0,"Pacific Heights","Lafayette-Park-182"],
+["Laurel Hill","94132",0,1,1,0,1,"Laurel Heights","Laurel-Hill-Playground-253"],
+["Margaret S. Hayward","94102",1,1,2,0,2,"Civic Center","Margaret-S-Hayward-Playground-255"],
+["McCoppin Square","94116",0,1,1,0,1,"Sunset","McCoppin-Square-351"],
+["McLaren","94134",0,1,6,6,0,"McLaren Park","McLaren-Park-344"],
+["Merced Heights","94132",1,1,2,0,2,"Ingleside","Merced-Heights-Playground-256"],
+["Minnie & Lovie Ward","94131",0,1,2,2,0,"Oceanview","Minnie-Love-Ward-Rec-Center-97"],
+["Miraloma","94112",0,1,1,1,0,"Miraloma Park","Miraloma-Playground-259"],
+["Mission","94127",1,1,2,0,2,"Mission","Mission-Playground-260"],
+["Mission Creek Park","94107",1,1,1,0,1,"Mission Bay","Mission-Creek-Park-North-and-South-449"],
+["Moscone","94113",1,1,4,4,0,"Marina","Moscone-Rec-Center-101"],
+["Mountain Lake","94123",0,1,4,4,0,"Inner Richmond","Mountain-Lake-Park-189"],
+["Noe Valley","94114",0,0,1,0,1,"Noe Valley","Noe-Valley-Courts-357"],
+["Palega","94118",1,1,2,0,2,"Portola","Palega-Rec-Center-103"],
+["Parkside Square","94132",0,1,4,4,0,"Parkside","Parkside-Square-196"],
+["Peixotto (15th St)","94102",0,0,2,0,2,"Corona Heights","Peixotto-Playground-261"],
+["Potrero Hill","94110",1,1,2,2,0,"Potrero Hill","Potrero-Hill-Rec-Center-275"],
+["Presidio Wall","94118",0,1,4,4,0,"Presidio Heights","Presidio-Wall-Playground-251"],
+["Richmond","94121",0,1,1,1,0,"Richmond","Richmond-Playground-264"],
+["Rochambeau","94121",0,1,1,0,1,"Richmond","Rochambeau-Playground-265"],
+["Rossi","94110",0,1,3,3,0,"Inner Richmond","Angelo-J-Rossi-Playground-229"],
+["Silver Terrace","94124",1,1,1,0,1,"Bayview","Silver-Terrace-Playground-267"],
+["South Sunset","94116",0,1,1,0,1,"Sunset","South-Sunset-Playground-274"],
+["St. Mary's","94110",0,1,2,2,0,"Bernal Heights","St-Marys-Rec-Center-109"],
+["States Street (Flint St)","94114",0,0,2,0,2,"Corona Heights","States-Street-Playground-268"],
+["Stern Grove","94132",0,1,2,2,0,"Sunset","Sigmund-Stern-Grove-375"],
+["Sunnyside","94127",0,1,1,0,1,"Sunnyside","Sunnyside-Playground-269"],
+["Sunset","94122",0,1,2,2,0,"Sunset","Sunset-Rec-Center-110"],
+["Upper Noe","94131",1,1,1,1,0,"Noe Valley","Upper-Noe-Rec-Center-112"],
+["West Portal","94127",0,1,1,0,1,"West Portal","West-Portal-Playground-389"],
+["West Sunset","94116",1,1,2,0,2,"Sunset","West-Sunset-Playground-391"],
+["Youngblood Coleman","94124",1,1,2,0,2,"Bayview","Youngblood-Coleman-Playground-273"]
+].map(r=>({name:r[0],zip:r[1],lights:!!r[2],rr:!!r[3],total:r[4],res:r[5],walk:r[6],area:r[7],slug:r[8]}));
+
+const FLAGS={
+  "Rossi":"City table lists all 3 as reservable, but courts 1–2 have long been run as walk-up. Worth checking on site.",
+  "Goldman Tennis Center":"Run separately with its own paid booking system."
+};
+
+const LL={"Alamo Square":[37.7764,-122.4347],"Alice Chalmers":[37.7106,-122.4447],"Alice Marble":[37.8015,-122.4196],"Alta Plaza":[37.7912,-122.4373],"Aptos":[37.7302,-122.4672],"Argonne":[37.7800,-122.4710],"Balboa":[37.7253,-122.4433],"Buena Vista":[37.7685,-122.4415],"Cabrillo":[37.7740,-122.4980],"Cayuga":[37.7196,-122.4400],"Coronado":[37.7550,-122.4130],"Crocker Amazon":[37.7110,-122.4330],"Dolores":[37.7596,-122.4269],"Douglass":[37.7470,-122.4390],"DuPont":[37.7808,-122.4870],"Eureka Valley":[37.7590,-122.4385],"Excelsior":[37.7235,-122.4300],"Fulton":[37.7726,-122.4865],"George Christopher":[37.7430,-122.4410],"Glen Canyon":[37.7395,-122.4415],"Golden Gate Heights":[37.7560,-122.4700],"Goldman Tennis Center":[37.7700,-122.4590],"Grattan":[37.7640,-122.4500],"Hamilton":[37.7855,-122.4340],"Hayes Valley":[37.7770,-122.4290],"Helen Wills":[37.7945,-122.4190],"Holly Park":[37.7365,-122.4205],"J. P. Murphy":[37.7560,-122.4665],"Jackson":[37.7650,-122.3990],"James Rolph Jr.":[37.7520,-122.4100],"Joe DiMaggio":[37.8015,-122.4130],"Junipero Serra":[37.7300,-122.4780],"Lafayette":[37.7915,-122.4275],"Laurel Hill":[37.7860,-122.4500],"Margaret S. Hayward":[37.7810,-122.4220],"McCoppin Square":[37.7425,-122.4890],"McLaren":[37.7205,-122.4180],"Merced Heights":[37.7180,-122.4660],"Minnie & Lovie Ward":[37.7150,-122.4600],"Miraloma":[37.7380,-122.4510],"Mission":[37.7590,-122.4230],"Mission Creek Park":[37.7700,-122.3940],"Moscone":[37.8010,-122.4340],"Mountain Lake":[37.7870,-122.4690],"Noe Valley":[37.7505,-122.4395],"Palega":[37.7255,-122.4110],"Parkside Square":[37.7400,-122.4920],"Peixotto (15th St)":[37.7640,-122.4380],"Potrero Hill":[37.7580,-122.3970],"Presidio Wall":[37.7880,-122.4545],"Richmond":[37.7845,-122.4775],"Rochambeau":[37.7770,-122.4890],"Rossi":[37.7790,-122.4590],"Silver Terrace":[37.7350,-122.4000],"South Sunset":[37.7465,-122.5000],"St. Mary's":[37.7320,-122.4180],"States Street (Flint St)":[37.7630,-122.4400],"Stern Grove":[37.7360,-122.4780],"Sunnyside":[37.7310,-122.4460],"Sunset":[37.7560,-122.4890],"Upper Noe":[37.7425,-122.4275],"West Portal":[37.7420,-122.4660],"West Sunset":[37.7540,-122.4990],"Youngblood Coleman":[37.7380,-122.3850]};
+const COAST=[[37.7080,-122.5025],[37.7350,-122.5110],[37.7600,-122.5100],[37.7710,-122.5100],[37.7790,-122.5135],[37.7870,-122.5060],[37.7880,-122.4920],[37.7935,-122.4840],[37.8020,-122.4805],[37.8105,-122.4770],[37.8060,-122.4650],[37.8070,-122.4480],[37.8050,-122.4360],[37.8075,-122.4270],[37.8090,-122.4190],[37.8085,-122.4100],[37.8060,-122.4000],[37.7970,-122.3890],[37.7880,-122.3880],[37.7780,-122.3870],[37.7650,-122.3850],[37.7560,-122.3760],[37.7450,-122.3790],[37.7340,-122.3680],[37.7300,-122.3570],[37.7190,-122.3650],[37.7140,-122.3800],[37.7080,-122.3870]];
+const GGP=[[37.7655,-122.5104],[37.7745,-122.5108],[37.7745,-122.4475],[37.7720,-122.4475],[37.7720,-122.4535],[37.7655,-122.4535]];
+const W=1000,S=7669,X0=-122.522,Y0=37.816,CL=Math.cos(37.76*Math.PI/180);
+const H=Math.round((Y0-37.703)*S);
+const px=([la,lo])=>[((lo-X0)*CL*S).toFixed(1),((Y0-la)*S).toFixed(1)];
+const poly=pts=>pts.map(px).map(p=>p.join(",")).join(" ");
+
+const st={mode:"walk",lights:false,rr:false,q:"",sort:"name",view:"list",sel:null};
+try{const s=JSON.parse(localStorage.getItem("sfwalkup")||"{}");Object.assign(st,s,{sel:null})}catch(e){}
+if(st.mode!=="all")st.mode="walk";
+function save(){try{localStorage.setItem("sfwalkup",JSON.stringify({mode:st.mode,lights:st.lights,rr:st.rr,sort:st.sort,view:st.view}))}catch(e){}}
+
+const walkSites=D.filter(d=>d.walk>0);
+document.getElementById("tally").innerHTML=
+  `<div><b>${D.reduce((a,d)=>a+d.total,0)}</b><span>public courts</span></div>`+
+  `<div><b>${walkSites.reduce((a,d)=>a+d.walk,0)}</b><span>free walk-up courts</span></div>`;
+
+function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+const pillOf=d=>d.walk&&!d.res?'<span class="pill walk">All walk-up</span>':d.walk?`<span class="pill mix">${d.walk} walk-up · ${d.res} reservable</span>`:'<span class="pill res">Reservation only</span>';
+const courtsOf=d=>'<i class="c w" title="walk-up"></i>'.repeat(d.walk)+'<i class="c r" title="reservable"></i>'.repeat(d.res);
+const park=d=>`https://sfrecpark.org/Facilities/Facility/Details/${d.slug}`;
+const gmap=d=>"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(d.name+" tennis courts San Francisco");
+const flagOf=d=>FLAGS[d.name]?`<span class="flag">${esc(FLAGS[d.name])}</span>`:"";
+const metaOf=d=>`<div class="meta"><span>${esc(d.area)}</span><span class="zip">${d.zip}</span><span>${d.lights?"Lights":"No lights"}</span><span>${d.rr?"Restrooms":"No restrooms"}</span></div>`;
+const linksOf=d=>`<span class="links"><a href="${gmap(d)}" target="_blank" rel="noopener">Directions</a><a href="${park(d)}" target="_blank" rel="noopener">Park page</a></span>`;
+
+function filtered(){
+  const rows=D.filter(d=>{
+    if(st.mode==="walk"&&d.walk===0)return false;
+    if(st.lights&&!d.lights)return false;
+    if(st.rr&&!d.rr)return false;
+    if(st.q){const q=st.q.toLowerCase();if(!(d.name.toLowerCase().includes(q)||d.area.toLowerCase().includes(q)||d.zip.includes(q)))return false}
+    return true});
+  rows.sort((a,b)=>st.sort==="walk"?(b.walk-a.walk||a.name.localeCompare(b.name)):st.sort==="area"?(a.area.localeCompare(b.area)||a.name.localeCompare(b.name)):a.name.localeCompare(b.name));
+  return rows;
+}
+function renderList(rows){
+  const L=document.getElementById("list");
+  if(!rows.length){L.innerHTML='<li class="empty">No parks match those filters. Try turning off Lights or Restrooms, or clearing the search.</li>';return}
+  L.innerHTML=rows.map(d=>`<li class="row"><div style="min-width:0"><div class="name"><a href="${park(d)}" target="_blank" rel="noopener">${esc(d.name)}</a></div>${metaOf(d)}</div>
+      <div class="courts" aria-label="${d.walk} walk-up, ${d.res} reservable">${courtsOf(d)}</div>
+      <div class="status">${pillOf(d)}${flagOf(d)}${linksOf(d)}</div></li>`).join("");
+}
+function renderPick(){
+  const P=document.getElementById("pick"),d=D.find(x=>x.name===st.sel);
+  if(!d){P.innerHTML='<p class="hint">Tap a dot to see the park. Bigger dots have more walk-up courts; outlined dots are reservation only.</p><p class="approx">Dot positions are approximate. Use Directions for the exact spot.</p>';return}
+  P.innerHTML=`<div class="name"><a href="${park(d)}" target="_blank" rel="noopener">${esc(d.name)}</a></div>${metaOf(d)}<div class="courts">${courtsOf(d)}</div><div class="status">${pillOf(d)}${linksOf(d)}</div>${FLAGS[d.name]?`<p class="flag">${esc(FLAGS[d.name])}</p>`:""}<p class="approx">Dot positions are approximate. Use Directions for the exact spot.</p>`;
+}
+function renderMap(rows){
+  const M=document.getElementById("map");
+  M.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  const ord=[...rows].sort((a,b)=>(a.name===st.sel)-(b.name===st.sel));
+  const dots=ord.map(d=>{const [x,y]=px(LL[d.name]);const r=d.walk?6+d.walk*2.2:6;const sel=d.name===st.sel;
+    return `<circle class="dot ${d.walk?"w":"r"}${sel?" sel":""}" cx="${x}" cy="${y}" r="${sel?r+3:r}" tabindex="0" role="button" data-n="${esc(d.name)}" aria-label="${esc(d.name)}: ${d.walk} walk-up courts"><title>${esc(d.name)} · ${d.walk} walk-up</title></circle>`}).join("");
+  const s=rows.find(d=>d.name===st.sel);let lab="";
+  if(s){const [x,y]=px(LL[s.name]);const left=+x>W*0.72;lab=`<text class="dname" x="${left?+x-14:+x+14}" y="${+y+4}" text-anchor="${left?"end":"start"}">${esc(s.name)}</text>`}
+  const [gx,gy]=px([37.7700,-122.4900]);
+  M.innerHTML=`<polygon class="land" points="${poly(COAST)}"/><polygon class="park" points="${poly(GGP)}"/>
+    <text class="lbl" x="${gx}" y="${+gy+4}" text-anchor="middle">Golden Gate Park</text>
+    <text class="lbl" x="14" y="${H/2}" >Pacific</text><text class="lbl" x="${W-14}" y="${H*0.42}" text-anchor="end">Bay</text>
+    <text class="lbl" x="${px([37.812,-122.476])[0]}" y="18" text-anchor="middle">Golden Gate</text>${dots}${lab}`;
+  M.querySelectorAll(".dot").forEach(c=>{const go=()=>{st.sel=st.sel===c.dataset.n?null:c.dataset.n;render()};
+    c.addEventListener("click",go);c.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})});
+  renderPick();
+}
+function render(){
+  const rows=filtered();
+  if(st.sel&&!rows.some(d=>d.name===st.sel))st.sel=null;
+  const n=rows.reduce((a,d)=>a+d.walk,0);
+  document.getElementById("count").textContent=`${rows.length} ${rows.length===1?"park":"parks"} · ${n} walk-up ${n===1?"court":"courts"}`;
+  const isMap=st.view==="map";
+  document.getElementById("list").hidden=isMap;
+  document.getElementById("mapview").hidden=!isMap;
+  document.getElementById("sort").hidden=isMap;
+  isMap?renderMap(rows):renderList(rows);
+}
+function sync(){
+  document.querySelectorAll(".seg button[data-mode]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mode===st.mode));
+  document.querySelectorAll(".seg button[data-view]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===st.view));
+  document.getElementById("f-lights").setAttribute("aria-pressed",st.lights);
+  document.getElementById("f-rr").setAttribute("aria-pressed",st.rr);
+  document.getElementById("sort").value=st.sort;
+  render();save();
+}
+document.querySelectorAll(".seg button[data-mode]").forEach(b=>b.addEventListener("click",()=>{st.mode=b.dataset.mode;sync()}));
+document.querySelectorAll(".seg button[data-view]").forEach(b=>b.addEventListener("click",()=>{st.view=b.dataset.view;sync()}));
+document.getElementById("f-lights").addEventListener("click",()=>{st.lights=!st.lights;sync()});
+document.getElementById("f-rr").addEventListener("click",()=>{st.rr=!st.rr;sync()});
+document.getElementById("q").addEventListener("input",e=>{st.q=e.target.value;render()});
+document.getElementById("sort").addEventListener("change",e=>{st.sort=e.target.value;sync()});
+sync();
+</script>
+
+</body></html>
